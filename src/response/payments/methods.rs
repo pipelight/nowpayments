@@ -1,6 +1,9 @@
+use crate::EnvConfig;
+
 use super::Payment;
 use super::Status;
 
+use anyhow::Result;
 use chrono::{NaiveDateTime, Utc};
 
 /// Convenience methods
@@ -28,5 +31,20 @@ impl Payment {
     // The payment status is unknown.
     pub fn is_unknown(&self) -> bool {
         vec![Status::Unknown].contains(&self.status)
+    }
+
+    pub async fn update(&mut self) -> Result<Self> {
+        #[cfg(debug_assertions)]
+        {
+            self.status = Status::Sending;
+        }
+        #[cfg(not(debug_assertions))]
+        {
+            let client = EnvConfig::client();
+            let updated_payment = client.payment().state().payment_id(self.id).get().await?;
+            *self = updated_payment;
+        }
+
+        Ok(self.to_owned())
     }
 }

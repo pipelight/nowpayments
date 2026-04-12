@@ -8,9 +8,11 @@ use chrono::{NaiveDateTime, Utc};
 
 /// Convenience methods
 impl Payment {
-    // Is the payment url expired :
-    // - > 5 days
-    // - (nowpayments > 7 days)
+    /// Is the payment url expired?
+    /// INFO:
+    /// For safety reasons,
+    /// This method expires the payments a bit earlier than the nowpayment API
+    /// (which is > 7 days).
     pub fn is_expired(&self) -> bool {
         let now: NaiveDateTime = Utc::now().naive_utc();
         let diff = now - self.created_at;

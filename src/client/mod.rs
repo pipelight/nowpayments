@@ -5,6 +5,7 @@ mod mock_payment;
 mod payment;
 mod payout;
 
+use bon::{bon, builder};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -48,7 +49,6 @@ impl EnvConfig {
         Self {
             api_key: var("NOWPAYMENTS_API_KEY").unwrap(),
             sandbox_api_key: var("NOWPAYMENTS_SANDBOX_API_KEY").unwrap(),
-
             email: var("NOWPAYMENTS_EMAIL").unwrap_or("null".to_owned()),
             password: var("NOWPAYMENTS_PASSWORD").unwrap_or("null".to_owned()),
         }
@@ -56,12 +56,15 @@ impl EnvConfig {
     /// Generate a ready to use client from local environment variables.
     pub fn client() -> Client {
         let config = Self::parse();
-        Client::new(config.api_key.as_str())
+        Client::builder().api_key(config.api_key).build()
     }
     /// Generate a ready to use client from local environment variables.
     pub fn sandbox_client() -> Client {
         let config = Self::parse();
-        Client::new_sandbox(config.api_key.as_str())
+        Client::builder()
+            .api_key(config.api_key)
+            .sandbox(true)
+            .build()
     }
 }
 
@@ -72,37 +75,36 @@ pub struct Client {
     jwt: JWT,
     client: reqwest::Client,
 }
+#[bon]
 impl Client {
-    pub fn new(api_key: &str) -> Self {
+    #[builder(
+        on(String,into),
+        on(Option<String>,into)
+    )]
+    pub fn new(
+        api_key: String,
+        email: Option<String>,
+        password: Option<String>,
+        sandbox: Option<bool>,
+    ) -> Self {
         let mut headers = header::HeaderMap::new();
-        headers.insert("x-api-key", header::HeaderValue::from_str(api_key).unwrap());
-
+        headers.insert(
+            "x-api-key",
+            header::HeaderValue::from_str(&api_key).unwrap(),
+        );
+        let base_url = match sandbox {
+            Some(true) => BASE_SANDBOX_URL,
+            _ => BASE_URL,
+        };
         Self {
-            base_url: BASE_URL,
+            base_url,
             client: reqwest::ClientBuilder::new()
                 .user_agent(USERAGENT)
                 .default_headers(headers)
                 .build()
                 .unwrap(),
-            email: None,
-            password: None,
-            jwt: JWT::new(),
-        }
-    }
-
-    pub fn new_sandbox(api_key: &str) -> Self {
-        let mut headers = header::HeaderMap::new();
-        headers.insert("x-api-key", header::HeaderValue::from_str(api_key).unwrap());
-
-        Self {
-            base_url: BASE_SANDBOX_URL,
-            client: reqwest::ClientBuilder::new()
-                .user_agent(USERAGENT)
-                .default_headers(headers)
-                .build()
-                .unwrap(),
-            email: None,
-            password: None,
+            email,
+            password,
             jwt: JWT::new(),
         }
     }

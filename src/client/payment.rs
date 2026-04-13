@@ -16,6 +16,15 @@ use std::collections::HashMap;
 
 use anyhow::{bail, Result};
 
+#[derive(Debug, serde::Deserialize)]
+struct ApiError {
+    status: bool,
+    #[serde(alias = "statusCode", alias = "status_code")]
+    status_code: Option<u16>,
+    code: Option<String>,
+    message: String,
+}
+
 pub trait DefaultPaymentMethods {
     fn create() -> Payment;
     fn state() -> Payment;
@@ -72,6 +81,21 @@ impl PaymentMethods<'_> {
         }
         let client = self.client;
         let res: String = client.post("payment", body).await?;
+        
+        if let Ok(err) = serde_json::from_str::<ApiError>(&res) {
+            if !err.status {
+                let code = err.code.unwrap_or_else(|| "UNKNOWN".to_string());
+                let msg = err.message;
+
+                return Err(anyhow::anyhow!(
+                    "NowPayments API error: [{}] {} (statusCode: {:?})",
+                    code,
+                    msg,
+                    err.status_code
+                ));
+            }
+        }
+
         let payment: RawPayment = serde_json::from_str(res.as_str())?;
         let payment: Payment = payment.into();
         Ok(payment)

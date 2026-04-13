@@ -52,18 +52,28 @@ pub struct SelectedCurrencies {
 pub enum Currency {
     // Real money
     XMR,
-    // Altcoins/Shitcoins
-    SOL,
-    USDCSOL,   // Stablecoin
-    USDTERC20, // Stablecoin
-    ETH,
-    /// The DaddyCoin
+
+    // Altcoins / crypto
     BTC,
+    ETH,
+    SOL,
+    TRX,
+    BNBBSC,
+
+    // Stablecoins
+    USDT,
+    USDC,
+    USDCSOL,
+    USDTERC20,
+    USDTTRC20,
+    USDTBSC,
+
     // Fiat
     USD,
 
     UNKNOWN,
 }
+
 impl fmt::Display for Currency {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
@@ -75,40 +85,100 @@ impl Currency {
     /// The official currency name.
     pub fn name(&self) -> String {
         match self {
-            Self::XMR => "Monero".to_string(),
-            Self::BTC => "Bitcoin".to_string(),
-            Self::ETH => "Ethereum".to_string(),
-            Self::SOL => "Solana".to_string(),
-            Self::USDCSOL => "USD Coin (Solana)".to_string(),
-            Self::USDTERC20 => "Tether USD (Ethereum)".to_string(),
-            Self::USD => "US Dollar".to_string(),
-            _ => "Unknown".to_string(),
+            Self::XMR => "Monero",
+            Self::BTC => "Bitcoin",
+            Self::ETH => "Ethereum",
+            Self::SOL => "Solana",
+            Self::TRX => "Tron",
+            Self::BNBBSC => "BNB (Binance Smart Chain)",
+
+            Self::USDT => "Tether USD",
+            Self::USDC => "USD Coin",
+            Self::USDCSOL => "USD Coin (Solana)",
+            Self::USDTERC20 => "Tether USD (ERC20)",
+            Self::USDTTRC20 => "Tether USD (TRC20)",
+            Self::USDTBSC => "Tether USD (BEP20)",
+
+            Self::USD => "US Dollar",
+
+            Self::UNKNOWN => "Unknown",
         }
+        .to_string()
     }
-    /// The nowpayment internal currency symbol.
+
+    /// The CoinGecko / NOWPayments ID
     pub fn cg_id(&self) -> String {
         match self {
-            Self::XMR => "monero".to_string(),
-            Self::BTC => "bitcoin".to_string(),
-            Self::ETH => "ethereum".to_string(),
-            Self::SOL => "solana".to_string(),
-            Self::USDCSOL => "usdcsol".to_string(),
-            Self::USDTERC20 => "tether".to_string(),
-            Self::USD => "usd".to_string(),
-            _ => "unknown".to_string(),
+            Self::XMR => "monero",
+            Self::BTC => "bitcoin",
+            Self::ETH => "ethereum",
+            Self::SOL => "solana",
+            Self::TRX => "tron",
+            Self::BNBBSC => "binancecoin",
+
+            Self::USDT => "tether",
+            Self::USDC => "usd-coin",
+            Self::USDCSOL => "usd-coin",
+            Self::USDTERC20 => "tether",
+            Self::USDTTRC20 => "tether",
+            Self::USDTBSC => "tether",
+
+            Self::USD => "usd",
+
+            Self::UNKNOWN => "unknown",
         }
+        .to_string()
     }
-    /// The currency network.
-    /// Used to generate the custom uri scheme.
+
+    /// The currency network (used for URI schemes)
     pub fn network(&self) -> String {
         match self {
-            Self::XMR => "xmr".to_string(),
-            Self::BTC => "btc".to_string(),
-            Self::ETH => "eth".to_string(),
-            Self::SOL => "sol".to_string(),
-            Self::USDCSOL => "sol".to_string(),
-            Self::USDTERC20 => "eth".to_string(),
-            _ => "unknown".to_string(),
+            Self::XMR => "xmr",
+            Self::BTC => "btc",
+            Self::ETH => "eth",
+            Self::SOL => "sol",
+            Self::TRX => "trx",
+            Self::BNBBSC => "bsc",
+
+            Self::USDT => "eth", // default fallback
+            Self::USDC => "eth",
+
+            Self::USDCSOL => "sol",
+            Self::USDTERC20 => "eth",
+            Self::USDTTRC20 => "trx",
+            Self::USDTBSC => "bsc",
+
+            Self::USD => "fiat",
+
+            Self::UNKNOWN => "unknown",
+        }
+        .to_string()
+    }
+
+    pub fn protocol(&self) -> &'static str {
+        match self {
+            // Native coins (no token standard)
+            Self::BTC => "native",
+            Self::ETH => "native",
+            Self::XMR => "native",
+            Self::SOL => "native",
+            Self::TRX => "native",
+            Self::BNBBSC => "native",
+
+            // Stablecoins / tokens
+            Self::USDTERC20 => "erc20",
+            Self::USDTTRC20 => "trc20",
+            Self::USDTBSC => "bep20",
+
+            Self::USDCSOL => "spl",
+            Self::USDC => "erc20", // default assumption
+
+            Self::USDT => "erc20", // default fallback unless specified
+
+            // Fiat
+            Self::USD => "fiat",
+
+            Self::UNKNOWN => "unknown",
         }
     }
 }

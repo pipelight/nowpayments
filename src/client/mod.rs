@@ -12,6 +12,7 @@ use std::fmt::Display;
 // Env vars
 use dotenvy;
 use std::env::var;
+use std::path::Path;
 
 use crate::response::{
     conversion::SingleConversion,
@@ -35,39 +36,6 @@ static BASE_URL: &str = "https://api.nowpayments.io/v1/";
 static BASE_SANDBOX_URL: &str = "https://api-sandbox.nowpayments.io/v1/";
 static USERAGENT: &str = concat!("rust/nowpayments/", "0.2.3");
 
-/// NowPayments client configuration from environment variables.
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct EnvConfig {
-    pub api_key: String,
-    pub sandbox_api_key: String,
-    pub email: String,
-    pub password: String,
-}
-impl EnvConfig {
-    pub fn parse() -> Self {
-        dotenvy::dotenv().unwrap();
-        Self {
-            api_key: var("NOWPAYMENTS_API_KEY").unwrap(),
-            sandbox_api_key: var("NOWPAYMENTS_SANDBOX_API_KEY").unwrap(),
-            email: var("NOWPAYMENTS_EMAIL").unwrap_or("null".to_owned()),
-            password: var("NOWPAYMENTS_PASSWORD").unwrap_or("null".to_owned()),
-        }
-    }
-    /// Generate a ready to use client from local environment variables.
-    pub fn client() -> Client {
-        let config = Self::parse();
-        Client::builder().api_key(config.api_key).build()
-    }
-    /// Generate a ready to use client from local environment variables.
-    pub fn sandbox_client() -> Client {
-        let config = Self::parse();
-        Client::builder()
-            .api_key(config.api_key)
-            .sandbox(true)
-            .build()
-    }
-}
-
 pub struct Client {
     base_url: &'static str,
     email: Option<String>,
@@ -75,8 +43,31 @@ pub struct Client {
     jwt: JWT,
     client: reqwest::Client,
 }
+
 #[bon]
 impl Client {
+    /// Load the .env file from project root or from the path parameter.
+    #[builder(
+        on(String,into),
+        on(Option<String>,into)
+    )]
+    pub fn from_env(path: Option<String>, sandbox: Option<bool>) -> Self {
+        match path {
+            None => {
+                dotenvy::dotenv().unwrap();
+            }
+            Some(v) => {
+                dotenvy::from_path(Path::new(&v)).unwrap();
+            }
+        };
+        Client::builder()
+            .api_key(var("NOWPAYMENTS_API_KEY").unwrap())
+            .maybe_sandbox(sandbox)
+            .maybe_email(var("NOWPAYMENTS_EMAIL").ok())
+            .maybe_password(var("NOWPAYMENTS_PASSWORD").ok())
+            .build()
+    }
+
     #[builder(
         on(String,into),
         on(Option<String>,into)

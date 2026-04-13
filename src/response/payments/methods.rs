@@ -1,5 +1,3 @@
-use crate::EnvConfig;
-
 use super::Payment;
 use super::Status;
 

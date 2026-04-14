@@ -46,7 +46,9 @@ impl CurrenciesMethods<'_> {
         Ok(serde_json::from_str(req.as_str())?)
     }
     /// Call to the /get_estimated_price API endpoint
-    #[builder(finish_fn = get)]
+    #[builder(
+        finish_fn = get,
+    )]
     pub async fn price(
         &self,
         amount: f64,
@@ -67,12 +69,25 @@ impl CurrenciesMethods<'_> {
 
     // Get minimal payment amount.
     #[builder(finish_fn = get)]
-    pub async fn min_amount(&self, from: &Currency, to: &Currency) -> Result<MinPaymentAmount> {
-        let path = format!(
+    pub async fn min_amount(
+        &self,
+        from: &Currency,
+        to: &Currency,
+        fiat_equivalent: Option<&Currency>,
+    ) -> Result<MinPaymentAmount> {
+        let mut path = format!(
             "min-amount?currency_from={}&currency_to={}",
             from.to_string().to_lowercase(),
             to.to_string().to_lowercase()
         );
+        let fiat_equivalent = match fiat_equivalent {
+            Some(v) => v,
+            None => &Currency::USD,
+        };
+        path.push_str(&format!(
+            "&fiat_equivalent={}",
+            fiat_equivalent.to_string().to_lowercase()
+        ));
         let client = self.client;
         let res = client.get(&path).await?;
 

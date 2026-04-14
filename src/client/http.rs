@@ -45,13 +45,13 @@ impl Client {
             .build()?;
 
         // Print headers only (no body)
-        tracing::debug!("{:#?}", req);
+        // tracing::debug!("{:#?}", req);
         if let Some(body) = req.body() {
             let body_str = str::from_utf8(body.as_bytes().unwrap()).unwrap();
             let body_json: Value = serde_json::from_str(body_str)?;
             // Print body
-            tracing::debug!("{:#?}", body_json);
-            tracing::trace!("{}", serde_json::to_string_pretty(&body_json)?);
+            // tracing::debug!("{:#?}", body_json);
+            // tracing::trace!("{}", serde_json::to_string_pretty(&body_json)?);
         }
 
         let response = self.client.execute(req).await?;

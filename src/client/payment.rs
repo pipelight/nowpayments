@@ -81,7 +81,7 @@ impl PaymentMethods<'_> {
         }
         let client = self.client;
         let res: String = client.post("payment", body).await?;
-        
+
         if let Ok(err) = serde_json::from_str::<ApiError>(&res) {
             if !err.status {
                 let code = err.code.unwrap_or_else(|| "UNKNOWN".to_string());
@@ -115,8 +115,7 @@ impl PaymentMethods<'_> {
         let mut payment: Payment = payment.into();
 
         // When payment is over,
-        // Set paid amount to USD and persist.
-        #[cfg(debug_assertions)]
+        // Fetch the actually paid amount in USD and update struct.
         if payment.is_finished() {
             if let Some(actually_paid) = payment.actually_paid {
                 let res: EstimatedPaymentAmount = client
@@ -130,7 +129,6 @@ impl PaymentMethods<'_> {
                 payment.actually_paid_price = Some(Decimal::from_str(&res.estimated_amount)?);
             }
         }
-
         Ok(payment)
     }
     #[builder(finish_fn = get)]

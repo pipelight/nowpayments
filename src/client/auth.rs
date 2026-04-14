@@ -1,4 +1,4 @@
-use super::Client;
+use super::{Client, Currency};
 use crate::jwt::JWTJson;
 
 use bon::bon;
@@ -30,10 +30,14 @@ impl AuthMethods<'_> {
     pub async fn jwt(&self) {
         dbg!(&self.client.jwt);
     }
-    #[builder(finish_fn = set)]
-    pub fn credentials(&mut self, email: String, password: String) {
-        self.client.email = Some(email);
-        self.client.password = Some(password);
+    #[builder(
+        finish_fn = set,
+        on(String,into),
+        on(Option<String>,into)
+    )]
+    pub fn credentials(&mut self, email: Option<String>, password: Option<String>) {
+        self.client.email = email;
+        self.client.password = password;
     }
     // Get a JWT from the API.
     // Needed for calls that need some priviledges

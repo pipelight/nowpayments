@@ -9,17 +9,17 @@ pub use response::{Currency, Payment, Status};
 mod test {
     use tracing_test::traced_test;
 
-    use super::client::{Client, EnvConfig};
+    use super::client::Client;
     use crate::response::{status::ApiStatus, Currency, Payment, Status};
 
     use anyhow::Result;
 
     fn client() -> Client {
-        EnvConfig::client()
+        Client::from_env().build()
     }
 
     fn sandbox_client() -> Client {
-        EnvConfig::sandbox_client()
+        Client::from_env().sandbox(true).build()
     }
 
     #[test]
@@ -68,6 +68,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[traced_test]
     async fn get_min_payment_amount() -> Result<()> {
         let client = client();
         // panics if not error
@@ -76,6 +77,8 @@ mod test {
             .min_amount()
             .from(&Currency::ETH)
             .to(&Currency::BTC)
+            // Optional: default to USD.
+            .fiat_equivalent(&Currency::USD)
             .get()
             .await?;
         Ok(())
@@ -100,16 +103,30 @@ mod test {
     #[tokio::test]
     #[traced_test]
     // WARNING: Method does not work on sandbox.
-    async fn authentication() -> Result<()> {
+    async fn failed_authentication() -> Result<()> {
         let mut client = client();
-        // Can be ignored because credentials already parsed from env.
-        let config = EnvConfig::parse();
+
+        // This step can be ignored when email and password are set directly from env via Client::from_env().build();
+        let email = "test@test.org";
+        let password = "my_password";
         client
             .auth()
             .credentials()
-            .email(config.email)
-            .password(config.password)
+            .email(email)
+            .password(password)
             .set();
+
+        // Request a JWT against the remote API.
+        assert!(client.auth().set().await.is_err());
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    // WARNING: Method does not work on sandbox.
+    async fn authentication() -> Result<()> {
+        let mut client = client();
+
         // Request a JWT against the remote API.
         client.auth().set().await?;
         Ok(())
@@ -157,9 +174,16 @@ mod test {
     // WARNING: Method does not work on sandbox.
     async fn get_payment() -> Result<()> {
         let mut client = client();
-        let config = EnvConfig::parse();
         client.auth().set().await?;
         client.payment().state().payment_id(1).get().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    // TODO
+    // WARNING: Method does not work on sandbox.
+    async fn get_many_payments() -> Result<()> {
         Ok(())
     }
 }

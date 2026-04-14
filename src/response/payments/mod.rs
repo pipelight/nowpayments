@@ -27,6 +27,11 @@ pub struct Payment {
 
     /// Paid amount in currency from pay_amount(any crypto)
     pub actually_paid: Option<Decimal>,
+
+    /// INFO:
+    /// This field does not exists in the NOWPayments API.
+    /// This is a convenience field added by this library and transparently populated by the "client.payment().state().payment_id(payment_id).get()" method.
+    ///
     /// Paid amount in currency from price_amount(usd)
     pub actually_paid_price: Option<Decimal>,
 

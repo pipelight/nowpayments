@@ -38,8 +38,8 @@ static USERAGENT: &str = concat!("rust/nowpayments/", "0.2.3");
 
 pub struct Client {
     base_url: &'static str,
-    email: Option<String>,
-    password: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
     jwt: JWT,
     client: reqwest::Client,
 }
@@ -48,6 +48,7 @@ pub struct Client {
 impl Client {
     /// Load the .env file from project root or from the path parameter.
     #[builder(
+        finish_fn = build,
         on(String,into),
         on(Option<String>,into)
     )]

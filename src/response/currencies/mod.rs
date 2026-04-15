@@ -50,23 +50,24 @@ pub struct SelectedCurrencies {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, EnumIter, EnumString)]
 #[strum(serialize_all = "lowercase")]
 pub enum Currency {
-    // Real money
+    // Altcoins
     XMR,
-
-    // Altcoins / crypto
     BTC,
     ETH,
     SOL,
     TRX,
     BNBBSC,
+    // ZEC,
 
     // Stablecoins
-    USDT,
-    USDC,
     USDCSOL,
     USDTERC20,
     USDTTRC20,
     USDTBSC,
+    DAIETH,
+
+    USDT,
+    USDC,
 
     // Fiat
     USD,
@@ -92,12 +93,14 @@ impl Currency {
             Self::TRX => "Tron",
             Self::BNBBSC => "BNB (Binance Smart Chain)",
 
-            Self::USDT => "Tether USD",
-            Self::USDC => "USD Coin",
             Self::USDCSOL => "USD Coin (Solana)",
             Self::USDTERC20 => "Tether USD (ERC20)",
             Self::USDTTRC20 => "Tether USD (TRC20)",
             Self::USDTBSC => "Tether USD (BEP20)",
+            Self::DAIETH => "DAI (ETH)",
+
+            Self::USDT => "Tether USD",
+            Self::USDC => "USD Coin",
 
             Self::USD => "US Dollar",
 
@@ -116,12 +119,14 @@ impl Currency {
             Self::TRX => "tron",
             Self::BNBBSC => "binancecoin",
 
-            Self::USDT => "tether",
-            Self::USDC => "usd-coin",
             Self::USDCSOL => "usd-coin",
             Self::USDTERC20 => "tether",
             Self::USDTTRC20 => "tether",
             Self::USDTBSC => "tether",
+            Self::DAIETH => "ethereum",
+
+            Self::USDT => "tether",
+            Self::USDC => "usd-coin",
 
             Self::USD => "usd",
 
@@ -147,6 +152,7 @@ impl Currency {
             Self::USDTERC20 => "eth",
             Self::USDTTRC20 => "trx",
             Self::USDTBSC => "bsc",
+            Self::DAIETH => "eth",
 
             Self::USD => "fiat",
 
@@ -169,10 +175,10 @@ impl Currency {
             Self::USDTERC20 => "erc20",
             Self::USDTTRC20 => "trc20",
             Self::USDTBSC => "bep20",
-
             Self::USDCSOL => "spl",
-            Self::USDC => "erc20", // default assumption
+            Self::DAIETH => "erc20",
 
+            Self::USDC => "erc20", // default assumption
             Self::USDT => "erc20", // default fallback unless specified
 
             // Fiat

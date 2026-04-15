@@ -57,3 +57,77 @@ impl Payment {
         Ok(self.to_owned())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Currency;
+    use anyhow::Result;
+    use chrono::Days;
+    use rust_decimal::{prelude::FromPrimitive, Decimal};
+    use tracing_test::traced_test;
+
+    #[test]
+    #[traced_test]
+    fn test_is_methods() -> Result<()> {
+        let payment = Payment {
+            id: 0,
+            status: Status::Waiting,
+            address: "my_fake_address".to_string(),
+
+            price_amount: Decimal::from_f64(10.0).unwrap(),
+            price_currency: Currency::USD,
+            pay_amount: Decimal::from_f64(0.01).unwrap(),
+            pay_currency: Currency::XMR,
+
+            actually_paid: Some(Decimal::from_f64(0.005).unwrap()),
+            actually_paid_price: None,
+
+            order_id: "test_id".to_string(),
+            order_description: "my test".to_string(),
+
+            created_at: NaiveDateTime::parse_from_str(
+                "2026-01-10T17:56:15.327Z",
+                "%Y-%m-%dT%H:%M:%S%.3fZ",
+            )
+            .unwrap(),
+            updated_at: NaiveDateTime::parse_from_str(
+                "2026-01-10T17:56:15.327Z",
+                "%Y-%m-%dT%H:%M:%S%.3fZ",
+            )
+            .unwrap(),
+        };
+
+        assert_eq!(payment.is_expired(), true);
+        assert_eq!(payment.is_used(), false);
+        assert_eq!(payment.is_finished(), false);
+
+        let now: NaiveDateTime = Utc::now().naive_utc();
+        let yesterday = now.checked_sub_days(Days::new(1)).unwrap();
+        let payment = Payment {
+            id: 0,
+            status: Status::Sending,
+            address: "my_fake_address".to_string(),
+
+            price_amount: Decimal::from_f64(10.0).unwrap(),
+            price_currency: Currency::USD,
+            pay_amount: Decimal::from_f64(0.01).unwrap(),
+            pay_currency: Currency::XMR,
+
+            actually_paid: Some(Decimal::from_f64(0.005).unwrap()),
+            actually_paid_price: None,
+
+            order_id: "test_id".to_string(),
+            order_description: "my test".to_string(),
+
+            created_at: yesterday,
+            updated_at: yesterday,
+        };
+
+        assert_eq!(payment.is_expired(), false);
+        assert_eq!(payment.is_used(), true);
+        assert_eq!(payment.is_finished(), false);
+
+        Ok(())
+    }
+}

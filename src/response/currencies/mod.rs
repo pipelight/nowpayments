@@ -64,6 +64,7 @@ pub enum Currency {
     USDTERC20,
     USDTTRC20,
     USDTBSC,
+    // USDCERC20
     DAIETH,
 
     USDT,

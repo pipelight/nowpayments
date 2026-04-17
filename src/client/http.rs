@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use serde_json::Value;
+use tracing::warn;
 
 // Internal http methods.
 impl Client {

@@ -62,7 +62,7 @@ impl From<RawPayment> for Payment {
             actually_paid_price: None,
 
             order_id: e.order_id,
-            order_description: e.order_description,
+            order_description: e.order_description.unwrap_or_default(),
 
             created_at: NaiveDateTime::parse_from_str(&e.created_at, "%Y-%m-%dT%H:%M:%S%.3fZ")
                 .unwrap(),
@@ -103,7 +103,7 @@ pub struct RawPayment {
     pub actually_paid: Option<Decimal>,
 
     pub order_id: String,
-    pub order_description: String,
+    pub order_description: Option<String>,
     pub purchase_id: String,
     // Dates
     pub created_at: String,
@@ -145,7 +145,7 @@ mod test {
             actually_paid: Some(Decimal::from_f64(0.005).unwrap()),
 
             order_id: "test_id".to_string(),
-            order_description: "my test".to_string(),
+            order_description: Some("my test".to_string()),
 
             purchase_id: "".to_string(),
 

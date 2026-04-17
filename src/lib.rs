@@ -155,17 +155,18 @@ mod test {
     // WARNING: Method does not work on sandbox.
     async fn create_payment() -> Result<()> {
         let client = client();
-        client
+        let payment: Payment = client
             .payment()
             .create()
             .amount(100.0)
             .price_currency(&Currency::USD)
             .pay_currency(&Currency::XMR)
-            .order_id("my_order_0")
-            .order_description("my test order")
-            .ipn_callback_url("https://test.com/")
+            .order_id("my_test_order_0")
+            .order_description("nowpayments_rs::test::my_test_order")
+            .ipn_callback_url("https://test.rs.nowpayments.io/")
             .post()
             .await?;
+        // println!("{:#?}", payment);
         Ok(())
     }
 

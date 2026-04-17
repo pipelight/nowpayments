@@ -11,12 +11,13 @@ impl Payment {
     /// Is the payment url expired?
     /// INFO:
     /// For safety reasons,
-    /// This method expires the payments a bit earlier than the nowpayment API
-    /// (which is > 7 days).
+    /// This method expires the payments a bit earlier than the nowpayment API:
+    /// - Production API: > 7 days.
+    /// - Sandbox API: > 24 hours.
     pub fn is_expired(&self) -> bool {
         let now: NaiveDateTime = Utc::now().naive_utc();
         let diff = now - self.created_at;
-        diff.num_days() > 4
+        self.status == Status::Expired || diff.num_days() > 4
     }
     /// The payment is being used.
     /// Some funds have been or are being sent.

@@ -26,10 +26,10 @@ impl MockMethods<'_> {
 }
 #[bon]
 impl MockPaymentMethods<'_> {
+    /// Create a payment locally.
+    /// For testing purpose.
     #[builder(finish_fn = post)]
     #[tracing::instrument(skip_all)]
-
-    /// Create a payment.
     pub fn create(
         &self,
         amount: f64,

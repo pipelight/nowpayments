@@ -43,10 +43,12 @@ impl Payment {
 #[bon]
 impl Payment {
     #[builder(finish_fn = exec)]
-    pub async fn update(&mut self, mock: Option<bool>) -> Result<Self> {
+    pub async fn update(&mut self, mock: Option<bool>, status: Option<Status>) -> Result<Self> {
         match mock {
             Some(true) => {
-                self.status = Status::Sending;
+                if let Some(status) = status {
+                    self.status = status;
+                }
             }
             _ => {
                 let client = Client::from_env().build();

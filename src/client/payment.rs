@@ -25,13 +25,6 @@ struct ApiError {
     message: String,
 }
 
-pub trait DefaultPaymentMethods {
-    fn create() -> Payment;
-    fn state() -> Payment;
-    // fn all() -> Vec<Payment>;
-    // fn one() -> Payment;
-}
-
 /// Just a convenience pattern so that,
 /// related methods are tidy under a common namespace.
 ///
@@ -41,7 +34,6 @@ pub trait DefaultPaymentMethods {
 /// client().payment().create();
 /// client().payment().status();
 /// ```
-///
 pub struct PaymentMethods<'a> {
     client: &'a Client,
 }
@@ -52,9 +44,9 @@ impl Client {
 }
 #[bon]
 impl PaymentMethods<'_> {
+    /// Create a payment.
     #[builder(finish_fn = post)]
     #[tracing::instrument(skip_all)]
-    /// Create a payment.
     pub async fn create(
         &self,
         amount: f64,
@@ -101,9 +93,9 @@ impl PaymentMethods<'_> {
         Ok(payment)
     }
 
+    /// Return an existing payment state.
     #[builder(finish_fn = get)]
     #[tracing::instrument(skip_all)]
-    /// Return an existing payment state.
     pub async fn state(&self, payment_id: u64) -> Result<Payment> {
         let client = self.client;
         if client.jwt.is_expired() {
@@ -131,9 +123,9 @@ impl PaymentMethods<'_> {
         }
         Ok(payment)
     }
+    /// Return an existing payment state.
     #[builder(finish_fn = get)]
     #[tracing::instrument(skip_all)]
-    /// Return an existing payment state.
     pub async fn all(
         &self,
         limit: u64, // 1 to 500

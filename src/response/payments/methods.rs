@@ -41,26 +41,6 @@ impl Payment {
     }
 }
 
-#[bon]
-impl Payment {
-    #[builder(finish_fn = exec)]
-    pub async fn update(&mut self, mock: Option<bool>, status: Option<Status>) -> Result<Self> {
-        match mock {
-            Some(true) => {
-                if let Some(status) = status {
-                    self.status = status;
-                }
-            }
-            _ => {
-                let client = Client::from_env().build();
-                let updated_payment = client.payment().state().payment_id(self.id).get().await?;
-                *self = updated_payment;
-            }
-        };
-        Ok(self.to_owned())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -61,12 +61,19 @@ impl Client {
                 dotenvy::from_path(Path::new(&v)).unwrap();
             }
         };
-        Client::builder()
-            .api_key(var("NOWPAYMENTS_API_KEY").unwrap())
-            .maybe_sandbox(sandbox)
-            .maybe_email(var("NOWPAYMENTS_EMAIL").ok())
-            .maybe_password(var("NOWPAYMENTS_PASSWORD").ok())
-            .build()
+        match sandbox {
+            Some(true) => Client::builder()
+                .sandbox(true)
+                .api_key(var("NOWPAYMENTS_SANDBOX_API_KEY").unwrap())
+                .maybe_email(var("NOWPAYMENTS_EMAIL").ok())
+                .maybe_password(var("NOWPAYMENTS_PASSWORD").ok())
+                .build(),
+            _ => Client::builder()
+                .api_key(var("NOWPAYMENTS_API_KEY").unwrap())
+                .maybe_email(var("NOWPAYMENTS_EMAIL").ok())
+                .maybe_password(var("NOWPAYMENTS_PASSWORD").ok())
+                .build(),
+        }
     }
 
     #[builder(
@@ -80,14 +87,14 @@ impl Client {
         sandbox: Option<bool>,
     ) -> Self {
         let mut headers = header::HeaderMap::new();
-        headers.insert(
-            "x-api-key",
-            header::HeaderValue::from_str(&api_key).unwrap(),
-        );
         let base_url = match sandbox {
             Some(true) => BASE_SANDBOX_URL,
             _ => BASE_URL,
         };
+        headers.insert(
+            "x-api-key",
+            header::HeaderValue::from_str(&api_key).unwrap(),
+        );
         Self {
             base_url,
             client: reqwest::ClientBuilder::new()
